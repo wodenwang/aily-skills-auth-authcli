@@ -22,3 +22,15 @@ func TestEvaluate(t *testing.T) {
 		t.Fatalf("Evaluate(expired) = %v", got)
 	}
 }
+
+func TestCacheKeyUsesNullForPrivateChat(t *testing.T) {
+	key := Key{
+		UserID:  "ou_abc123",
+		SkillID: "sales-analysis",
+		AgentID: "host-vm-a1b2c3d4",
+	}
+
+	if got := CacheKey(key); got != "ou_abc123|sales-analysis|host-vm-a1b2c3d4|null" {
+		t.Fatalf("CacheKey() = %s", got)
+	}
+}

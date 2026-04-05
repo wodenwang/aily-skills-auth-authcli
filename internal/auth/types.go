@@ -38,18 +38,19 @@ type RefreshResponse struct {
 	ExpiresIn      int    `json:"expires_in"`
 	RefreshBefore  int    `json:"refresh_before"`
 	OldTokenStatus string `json:"old_token_status"`
+	FailureCode    string `json:"failure_code"`
 }
 
 type Result struct {
-	OK            bool        `json:"ok"`
-	RequestID     string      `json:"request_id"`
-	Allowed       bool        `json:"allowed"`
-	TokenType     string      `json:"token_type,omitempty"`
-	AccessToken   string      `json:"access_token,omitempty"`
-	ExpiresIn     int         `json:"expires_in,omitempty"`
-	RefreshBefore int         `json:"refresh_before,omitempty"`
-	CacheHit      bool        `json:"cache_hit,omitempty"`
-	DenyCode      string      `json:"deny_code,omitempty"`
-	DenyMessage   string      `json:"deny_message,omitempty"`
-	AuthContext   AuthContext `json:"auth_context,omitempty"`
+	OK            bool         `json:"ok"`
+	RequestID     string       `json:"request_id"`
+	Allowed       bool         `json:"allowed"`
+	TokenType     string       `json:"token_type,omitempty"`
+	AccessToken   string       `json:"access_token,omitempty"`
+	ExpiresIn     int          `json:"expires_in,omitempty"`
+	RefreshBefore int          `json:"refresh_before,omitempty"`
+	CacheHit      bool         `json:"cache_hit,omitempty"`
+	DenyCode      string       `json:"deny_code,omitempty"`
+	DenyMessage   string       `json:"deny_message,omitempty"`
+	AuthContext   *AuthContext `json:"auth_context,omitempty"`
 }

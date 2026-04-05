@@ -39,16 +39,16 @@ func Run(args []string) int {
 		case errors.Is(err, errDenied):
 			return ExitDenied
 		case errors.Is(err, errInvalidInput):
-			_, _ = fmt.Fprintln(os.Stderr, err.Error())
+			_, _ = fmt.Fprintln(os.Stderr, renderError(err))
 			return ExitInvalidInput
 		case errors.Is(err, errCacheFailure):
-			_, _ = fmt.Fprintln(os.Stderr, err.Error())
+			_, _ = fmt.Fprintln(os.Stderr, renderError(err))
 			return ExitCacheFailure
 		case errors.Is(err, errUpstream):
-			_, _ = fmt.Fprintln(os.Stderr, err.Error())
+			_, _ = fmt.Fprintln(os.Stderr, renderError(err))
 			return ExitUpstreamError
 		default:
-			_, _ = fmt.Fprintln(os.Stderr, err.Error())
+			_, _ = fmt.Fprintln(os.Stderr, renderError(err))
 			return ExitInternalError
 		}
 	}
@@ -115,12 +115,22 @@ func check(ctx context.Context, client auth.Client, cachePath string, input cli.
 		case cache.StateRefresh:
 			refreshResp, refreshErr := client.Refresh(ctx, entry.AccessToken)
 			if refreshErr == nil {
-				updated := cache.NewEntry(key, entry.RequestID, refreshResp.AccessToken, entry.TokenType, refreshResp.ExpiresIn, refreshResp.RefreshBefore, now, "token_refresh")
-				cache.Upsert(&cacheFile, updated)
-				if saveErr := cache.Save(cachePath, cacheFile); saveErr != nil {
-					return auth.Result{}, fmt.Errorf("%w: save cache after refresh: %v", errCacheFailure, saveErr)
+				if refreshResp.FailureCode == "" {
+					updated := cache.NewEntry(key, entry.RequestID, refreshResp.AccessToken, entry.TokenType, refreshResp.ExpiresIn, refreshResp.RefreshBefore, now, "token_refresh")
+					cache.Upsert(&cacheFile, updated)
+					if saveErr := cache.Save(cachePath, cacheFile); saveErr != nil {
+						return auth.Result{}, fmt.Errorf("%w: save cache after refresh: %v", errCacheFailure, saveErr)
+					}
+					return allowedResultFromEntry(updated, key, true), nil
 				}
-				return allowedResultFromEntry(updated, key, true), nil
+				if isRefreshResetCode(refreshResp.FailureCode) {
+					cache.Delete(&cacheFile, key)
+					if saveErr := cache.Save(cachePath, cacheFile); saveErr != nil {
+						return auth.Result{}, fmt.Errorf("%w: delete invalid cache: %v", errCacheFailure, saveErr)
+					}
+					break
+				}
+				return auth.Result{}, fmt.Errorf("%w: refresh failure_code=%s", errUpstream, refreshResp.FailureCode)
 			}
 			var apiErr auth.APIError
 			if errors.As(refreshErr, &apiErr) && isRefreshResetCode(apiErr.Code) {
@@ -178,7 +188,7 @@ func check(ctx context.Context, client auth.Client, cachePath string, input cli.
 		ExpiresIn:     resp.ExpiresIn,
 		RefreshBefore: resp.RefreshBefore,
 		CacheHit:      false,
-		AuthContext: auth.AuthContext{
+		AuthContext: &auth.AuthContext{
 			UserID:  input.UserID,
 			SkillID: input.SkillID,
 			AgentID: input.AgentID,
@@ -205,7 +215,7 @@ func allowedResultFromEntry(entry cache.Entry, key cache.Key, cacheHit bool) aut
 		ExpiresIn:     expiresIn,
 		RefreshBefore: refreshBefore,
 		CacheHit:      cacheHit,
-		AuthContext: auth.AuthContext{
+		AuthContext: &auth.AuthContext{
 			UserID:  key.UserID,
 			SkillID: key.SkillID,
 			AgentID: key.AgentID,
@@ -230,4 +240,39 @@ func firstNonEmpty(values ...string) string {
 		}
 	}
 	return ""
+}
+
+func renderError(err error) string {
+	switch {
+	case errors.Is(err, errInvalidInput):
+		return fmt.Sprintf("AUTHCLI_INVALID_INPUT: %s", errorDetails(err, errInvalidInput))
+	case errors.Is(err, errCacheFailure):
+		return fmt.Sprintf("AUTHCLI_CACHE_FAILURE: %s", errorDetails(err, errCacheFailure))
+	case errors.Is(err, errUpstream):
+		return fmt.Sprintf("AUTHCLI_UPSTREAM_FAILURE: %s", renderUpstreamDetails(err))
+	default:
+		return fmt.Sprintf("AUTHCLI_INTERNAL_ERROR: %s", errorDetails(err, errInternal))
+	}
+}
+
+func errorDetails(err error, marker error) string {
+	text := err.Error()
+	prefix := marker.Error() + ": "
+	if len(text) >= len(prefix) && text[:len(prefix)] == prefix {
+		return text[len(prefix):]
+	}
+	return text
+}
+
+func renderUpstreamDetails(err error) string {
+	var apiErr auth.APIError
+	if errors.As(err, &apiErr) {
+		if apiErr.RequestID != "" {
+			return fmt.Sprintf("request_id=%s code=%s message=%s", apiErr.RequestID, apiErr.Code, apiErr.Message)
+		}
+		if apiErr.Code != "" {
+			return fmt.Sprintf("code=%s message=%s", apiErr.Code, apiErr.Message)
+		}
+	}
+	return errorDetails(err, errUpstream)
 }

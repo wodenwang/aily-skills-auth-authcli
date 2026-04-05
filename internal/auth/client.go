@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
 )
@@ -101,10 +102,26 @@ func (e UpstreamError) Unwrap() error {
 }
 
 func decodeAPIError(resp *http.Response) error {
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return UpstreamError{Op: "decode_error", Err: fmt.Errorf("status %d", resp.StatusCode)}
+	}
+
 	var apiErr APIError
 	apiErr.StatusCode = resp.StatusCode
-	if err := json.NewDecoder(resp.Body).Decode(&apiErr); err != nil {
+	if err := json.Unmarshal(body, &apiErr); err != nil {
 		return UpstreamError{Op: "decode_error", Err: fmt.Errorf("status %d", resp.StatusCode)}
+	}
+	if apiErr.Code == "" {
+		var authCheckDeny CheckResponse
+		if err := json.Unmarshal(body, &authCheckDeny); err == nil && !authCheckDeny.Allowed && authCheckDeny.DenyCode != "" {
+			return APIError{
+				StatusCode: resp.StatusCode,
+				Code:       authCheckDeny.DenyCode,
+				Message:    authCheckDeny.DenyMessage,
+				RequestID:  authCheckDeny.RequestID,
+			}
+		}
 	}
 	return apiErr
 }

@@ -52,3 +52,32 @@ func TestResolveInputPriority(t *testing.T) {
 		t.Fatalf("unexpected context: %#v", input.Context)
 	}
 }
+
+func TestResolveInputSkipsBlankValues(t *testing.T) {
+	cmd := Command{
+		Name:    "check",
+		SkillID: "sales-analysis",
+		UserID:  "   ",
+		AgentID: " ",
+		ChatID:  " ",
+	}
+	env := config.Settings{
+		UserID:  "env-user",
+		AgentID: "env-agent",
+		ChatID:  "env-chat",
+	}
+	file := config.File{
+		Format: "json",
+	}
+
+	input, err := ResolveInput(cmd, env, contextfile.File{}, file)
+	if err != nil {
+		t.Fatalf("ResolveInput() error = %v", err)
+	}
+	if input.UserID != "env-user" || input.AgentID != "env-agent" {
+		t.Fatalf("unexpected fallback resolution: %+v", input)
+	}
+	if input.ChatID == nil || *input.ChatID != "env-chat" {
+		t.Fatalf("unexpected chat fallback: %+v", input.ChatID)
+	}
+}

@@ -29,3 +29,22 @@ func TestWriteEnvDenied(t *testing.T) {
 		t.Fatalf("unexpected token field: %s", output)
 	}
 }
+
+func TestWriteJSONSuccessIncludesRequestID(t *testing.T) {
+	var buf bytes.Buffer
+	result := auth.Result{
+		OK:          true,
+		RequestID:   "req_123",
+		Allowed:     true,
+		TokenType:   "Bearer",
+		AccessToken: "tok_123",
+	}
+
+	if err := Write(&buf, "json", result); err != nil {
+		t.Fatalf("Write() error = %v", err)
+	}
+	output := buf.String()
+	if !strings.Contains(output, `"request_id": "req_123"`) {
+		t.Fatalf("missing request id: %s", output)
+	}
+}

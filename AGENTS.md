@@ -46,3 +46,26 @@
 - allow、deny、refresh 三类主路径可回归
 - fail-closed 行为稳定
 - 输出协议和缓存协议无漂移
+
+## Current Phase Status
+
+截至 `2026-04-05`，本仓 Phase 1 已完成，并已作为完整 E2E 链路的稳定上游输入：
+
+- `auth-cli check` 已实现并固定为唯一公开命令面
+- 输入优先级已按 `显式参数 > 环境变量 > 运行时上下文 > 本地配置` 落地
+- 本地 token 缓存、刷新窗口判断、过期重鉴权和 fail-closed 行为已实现
+- `/api/v1/auth/check` 与 `/api/v1/token/refresh` 已完成真实 `iam-service` 联调
+- `json`、`env`、`exit-code` 三种输出协议已对齐当前冻结契约
+- deny 响应与 upstream error 已明确区分
+- 真实 IAM UAT 已通过，报告见 [docs/authcli-iam-uat-report-2026-04-05.md](/Users/wenzhewang/workspace/codex/aily-skills-auth-authcli/docs/authcli-iam-uat-report-2026-04-05.md)
+
+当前仓明确仍不负责：
+
+- `/api/v1/token/verify` 服务端实现
+- `/api/v1/token/revoke` 服务端实现
+- 生产级发布、监控和运维流程
+
+当前阶段后续重点：
+
+- 保持输出协议和缓存协议稳定，不为试点接入引入破坏性变更
+- 配合试点 Skill 和完整 E2E 回归

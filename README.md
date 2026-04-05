@@ -43,6 +43,7 @@
 - `internal/cache/`: token 缓存文件读写和失效判断
 - `internal/cli/`: 参数解析与输入优先级处理
 - `internal/output/`: `json` / `env` / `exit-code` 输出
+- `examples/`: 固定联调样例配置与上下文
 - `docs/`: 子仓内冻结文档与测试计划
 
 ## Runtime Semantics
@@ -67,8 +68,11 @@ go run ./cmd/auth-cli check \
   --skill sales-analysis \
   --user-id ou_abc123 \
   --agent-id host-vm-a1b2c3d4 \
-  --format json
+  --format json \
+  --context-file ./examples/context-private.json
 ```
+
+固定联调命令见 [docs/minimal-integration.md](/Users/wenzhewang/workspace/codex/aily-skills-auth-authcli/docs/minimal-integration.md)。
 
 默认环境变量：
 
@@ -80,6 +84,13 @@ go run ./cmd/auth-cli check \
 - `AUTHCLI_AGENT_ID`
 - `AUTHCLI_CHAT_ID`
 - `AUTHCLI_FORMAT`
+
+稳定 stderr 前缀：
+
+- `AUTHCLI_INVALID_INPUT:`
+- `AUTHCLI_CACHE_FAILURE:`
+- `AUTHCLI_UPSTREAM_FAILURE:`
+- `AUTHCLI_INTERNAL_ERROR:`
 
 ## Upstream Contracts
 

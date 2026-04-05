@@ -31,15 +31,19 @@ func writeEnv(w io.Writer, result auth.Result) error {
 		fmt.Sprintf("AUTH_REQUEST_ID=%s", result.RequestID),
 	}
 	if result.Allowed {
+		authContext := auth.AuthContext{}
+		if result.AuthContext != nil {
+			authContext = *result.AuthContext
+		}
 		lines = append(lines,
 			fmt.Sprintf("AUTH_TOKEN_TYPE=%s", result.TokenType),
 			fmt.Sprintf("AUTH_ACCESS_TOKEN=%s", result.AccessToken),
 			fmt.Sprintf("AUTH_EXPIRES_IN=%d", result.ExpiresIn),
 			fmt.Sprintf("AUTH_REFRESH_BEFORE=%d", result.RefreshBefore),
-			fmt.Sprintf("AUTH_USER_ID=%s", result.AuthContext.UserID),
-			fmt.Sprintf("AUTH_SKILL_ID=%s", result.AuthContext.SkillID),
-			fmt.Sprintf("AUTH_AGENT_ID=%s", result.AuthContext.AgentID),
-			fmt.Sprintf("AUTH_CHAT_ID=%s", valueOrEmpty(result.AuthContext.ChatID)),
+			fmt.Sprintf("AUTH_USER_ID=%s", authContext.UserID),
+			fmt.Sprintf("AUTH_SKILL_ID=%s", authContext.SkillID),
+			fmt.Sprintf("AUTH_AGENT_ID=%s", authContext.AgentID),
+			fmt.Sprintf("AUTH_CHAT_ID=%s", valueOrEmpty(authContext.ChatID)),
 		)
 	} else {
 		lines = append(lines,
