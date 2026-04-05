@@ -1,4 +1,4 @@
-auth-cli
+/auth-cli
 bin/
 dist/
 .DS_Store
