@@ -74,6 +74,10 @@ go run ./cmd/auth-cli check \
 
 固定联调命令见 [docs/minimal-integration.md](/Users/wenzhewang/workspace/codex/aily-skills-auth-authcli/docs/minimal-integration.md)。
 
+## Alpha Release
+
+`0.1.0-alpha` 的构建产物、分发方式和宿主机部署要求见 [docs/release-and-distribution.md](/Users/wenzhewang/workspace/codex/aily-skills-auth-authcli/docs/release-and-distribution.md)。
+
 默认环境变量：
 
 - `AUTHCLI_IAM_BASE_URL`: IAM 服务地址，默认 `http://127.0.0.1:8000`
