@@ -1,0 +1,6 @@
+auth-cli
+bin/
+dist/
+.DS_Store
+.aily-skills-auth/
+coverage.out
