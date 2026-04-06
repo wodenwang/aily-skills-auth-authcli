@@ -5,4 +5,5 @@
 - [test-plan.md](/Users/wenzhewang/workspace/codex/aily-skills-auth-authcli/docs/test-plan.md)
 - [minimal-integration.md](/Users/wenzhewang/workspace/codex/aily-skills-auth-authcli/docs/minimal-integration.md)
 - [release-and-distribution.md](/Users/wenzhewang/workspace/codex/aily-skills-auth-authcli/docs/release-and-distribution.md)
+- [host-installation.md](/Users/wenzhewang/workspace/codex/aily-skills-auth-authcli/docs/host-installation.md)
 - [authcli-iam-uat-report-2026-04-05.md](/Users/wenzhewang/workspace/codex/aily-skills-auth-authcli/docs/authcli-iam-uat-report-2026-04-05.md)

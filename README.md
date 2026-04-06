@@ -78,6 +78,26 @@ go run ./cmd/auth-cli check \
 
 `0.1.0-alpha` 的构建产物、分发方式和宿主机部署要求见 [docs/release-and-distribution.md](/Users/wenzhewang/workspace/codex/aily-skills-auth-authcli/docs/release-and-distribution.md)。
 
+官方宿主机安装说明见 [docs/host-installation.md](/Users/wenzhewang/workspace/codex/aily-skills-auth-authcli/docs/host-installation.md)。
+
+推荐安装命令：
+
+```bash
+curl -fsSL https://github.com/wodenwang/aily-skills-auth-authcli/releases/download/v0.1.0-alpha/install-authcli.sh \
+  | sh -s -- --version v0.1.0-alpha --install-dir /usr/local/bin
+```
+
+安装后最小离线校验：
+
+```bash
+auth-cli check
+```
+
+期望：
+
+- 退出码 `20`
+- stderr 包含 `AUTHCLI_INVALID_INPUT: missing required flag: --skill`
+
 默认环境变量：
 
 - `AUTHCLI_IAM_BASE_URL`: IAM 服务地址，默认 `http://127.0.0.1:8000`
