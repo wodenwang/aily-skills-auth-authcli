@@ -2,25 +2,25 @@
 
 ## Goal
 
-冻结 `aily-skills-auth-authcli` 在 `0.1.0-alpha` 阶段的发布物、分发方式、宿主机部署要求和运行约束。
+冻结 `aily-skills-auth-authcli` 在 `0.2.0` 阶段的发布物、分发方式、宿主机部署要求和运行约束。
 
-本文件只定义 alpha 分发方案，不直接执行构建、打包或发布。
+本文件只定义分发方案，不直接执行构建、打包或发布。
 
 ## Release Target
 
-- 版本：`0.1.0-alpha`
-- Git tag：`v0.1.0-alpha`
+- 版本：`0.2.0`
+- Git tag：`v0.2.0`
 - Release 入口：GitHub Release
 
 ## Artifacts
 
-- 源码 tag：`v0.1.0-alpha`
+- 源码 tag：`v0.2.0`
 - GitHub Release
 - Darwin 二进制压缩包
 - Linux 二进制压缩包
 - Release 安装脚本 `install-authcli.sh`
 
-alpha 阶段固定约束：
+固定约束：
 
 - 使用 `go build` 产出单文件二进制
 - 不做 Homebrew
@@ -56,17 +56,18 @@ alpha 阶段固定约束：
 ## Build And Release Flow
 
 1. 运行 `go test ./...`
-2. 使用 `go build` 为 Darwin / Linux 构建二进制
-3. 打包压缩产物
-4. 准备 `scripts/install-authcli.sh`
-5. 创建 Git tag `v0.1.0-alpha`
-6. 创建 GitHub Release 并上传压缩包和安装脚本
+2. 运行 `./scripts/beta-smoke.sh`
+3. 使用 `go build` 为 Darwin / Linux 构建二进制
+4. 打包压缩产物
+5. 准备 `scripts/install-authcli.sh`
+6. 创建 Git tag `v0.2.0`
+7. 创建 GitHub Release 并上传压缩包和安装脚本
 
 Release 说明至少应包含：
 
 - 支持的平台
 - 官方安装命令
-- 固定命令入口 `auth-cli check --skill <skill_id>`
+- 固定命令入口 `auth-cli check --skill <skill_id> --user-id <user_id>`
 - 必填环境变量
 - 已冻结输出协议
 - 失败关闭约束
@@ -83,8 +84,8 @@ Release 说明至少应包含：
 官方安装命令：
 
 ```bash
-curl -fsSL https://github.com/wodenwang/aily-skills-auth-authcli/releases/download/v0.1.0-alpha/install-authcli.sh \
-  | sh -s -- --version v0.1.0-alpha --install-dir /usr/local/bin
+curl -fsSL https://github.com/wodenwang/aily-skills-auth-authcli/releases/download/v0.2.0/install-authcli.sh \
+  | sh -s -- --version v0.2.0 --install-dir /usr/local/bin
 ```
 
 升级方式：
@@ -96,14 +97,18 @@ curl -fsSL https://github.com/wodenwang/aily-skills-auth-authcli/releases/downlo
 ## Verification
 
 - `go build` 可为 Darwin / Linux 产出单文件二进制
-- `auth-cli check --skill <skill_id>` 命令可执行
+- `auth-cli check --skill <skill_id> --user-id <user_id>` 命令可执行
 - `auth-cli check` 在离线场景下返回冻结错误前缀和退出码 `20`
 - 缓存路径与配置路径在宿主机可用
 - 与 `iam-service` 的联调路径保持可用
 
 ## Frozen Interface
 
-- `auth-cli check --skill <skill_id>`
+- `auth-cli check --skill <skill_id> --user-id <user_id>`
+
+## Beta Gate
+
+发布前必须通过 [beta-release-checklist.md](/Users/wenzhewang/workspace/codex/aily-skills-auth-authcli/docs/beta-release-checklist.md)。
 
 ## Out Of Scope
 

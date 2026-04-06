@@ -2,6 +2,7 @@
 
 - [contracts/authcli-output.md](/Users/wenzhewang/workspace/codex/aily-skills-auth-authcli/docs/contracts/authcli-output.md)
 - [contracts/token-cache.md](/Users/wenzhewang/workspace/codex/aily-skills-auth-authcli/docs/contracts/token-cache.md)
+- [beta-release-checklist.md](/Users/wenzhewang/workspace/codex/aily-skills-auth-authcli/docs/beta-release-checklist.md)
 - [test-plan.md](/Users/wenzhewang/workspace/codex/aily-skills-auth-authcli/docs/test-plan.md)
 - [minimal-integration.md](/Users/wenzhewang/workspace/codex/aily-skills-auth-authcli/docs/minimal-integration.md)
 - [release-and-distribution.md](/Users/wenzhewang/workspace/codex/aily-skills-auth-authcli/docs/release-and-distribution.md)

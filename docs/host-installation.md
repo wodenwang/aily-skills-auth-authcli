@@ -42,24 +42,24 @@
 安装指定版本到默认目录 `~/.local/bin`：
 
 ```bash
-curl -fsSL https://github.com/wodenwang/aily-skills-auth-authcli/releases/download/v0.1.0-alpha/install-authcli.sh \
-  | sh -s -- --version v0.1.0-alpha
+curl -fsSL https://github.com/wodenwang/aily-skills-auth-authcli/releases/download/v0.2.0/install-authcli.sh \
+  | sh -s -- --version v0.2.0
 ```
 
 安装到固定系统目录：
 
 ```bash
-curl -fsSL https://github.com/wodenwang/aily-skills-auth-authcli/releases/download/v0.1.0-alpha/install-authcli.sh \
-  | sh -s -- --version v0.1.0-alpha --install-dir /usr/local/bin
+curl -fsSL https://github.com/wodenwang/aily-skills-auth-authcli/releases/download/v0.2.0/install-authcli.sh \
+  | sh -s -- --version v0.2.0 --install-dir /usr/local/bin
 ```
 
 如果宿主机不允许管道执行，使用两步式安装：
 
 ```bash
 curl -fsSL -o /tmp/install-authcli.sh \
-  https://github.com/wodenwang/aily-skills-auth-authcli/releases/download/v0.1.0-alpha/install-authcli.sh
+  https://github.com/wodenwang/aily-skills-auth-authcli/releases/download/v0.2.0/install-authcli.sh
 
-sh /tmp/install-authcli.sh --version v0.1.0-alpha --install-dir /usr/local/bin
+sh /tmp/install-authcli.sh --version v0.2.0 --install-dir /usr/local/bin
 ```
 
 ## Verification
@@ -83,6 +83,12 @@ auth-cli check
 - stderr 包含：`AUTHCLI_INVALID_INPUT: missing required flag: --skill`
 
 这是安装后的离线校验，不依赖 IAM 在线。
+
+如需完整 beta 校验，继续执行：
+
+```bash
+./scripts/beta-smoke.sh
+```
 
 ## Runtime Preparation
 
@@ -108,13 +114,13 @@ export AUTHCLI_CONFIG_FILE="$HOME/.aily-skills-auth/config.json"
 1. 用新版本的 `install-authcli.sh` 指向目标 tag
 2. 覆盖原二进制
 3. 重新执行离线校验
-4. 再执行一条真实 `check --skill ...` 验证
+4. 再执行一条真实 `check --skill ... --user-id ...` 验证
 
 示例：
 
 ```bash
-curl -fsSL https://github.com/wodenwang/aily-skills-auth-authcli/releases/download/v0.1.0-alpha/install-authcli.sh \
-  | sh -s -- --version v0.1.0-alpha --install-dir /usr/local/bin
+curl -fsSL https://github.com/wodenwang/aily-skills-auth-authcli/releases/download/v0.2.0/install-authcli.sh \
+  | sh -s -- --version v0.2.0 --install-dir /usr/local/bin
 ```
 
 升级不修改：
@@ -128,8 +134,8 @@ curl -fsSL https://github.com/wodenwang/aily-skills-auth-authcli/releases/downlo
 回滚方式固定为重新安装旧 tag：
 
 ```bash
-curl -fsSL https://github.com/wodenwang/aily-skills-auth-authcli/releases/download/v0.1.0-alpha/install-authcli.sh \
-  | sh -s -- --version v0.1.0-alpha --install-dir /usr/local/bin
+curl -fsSL https://github.com/wodenwang/aily-skills-auth-authcli/releases/download/v0.2.0/install-authcli.sh \
+  | sh -s -- --version v0.2.0 --install-dir /usr/local/bin
 ```
 
 回滚后必须重新执行 Verification 小节中的离线校验。
@@ -141,7 +147,7 @@ curl -fsSL https://github.com/wodenwang/aily-skills-auth-authcli/releases/downlo
 ```bash
 mkdir -p /tmp/authcli-release /usr/local/bin
 curl -fsSL -o /tmp/authcli-release/auth-cli-darwin-arm64.tar.gz \
-  https://github.com/wodenwang/aily-skills-auth-authcli/releases/download/v0.1.0-alpha/auth-cli-darwin-arm64.tar.gz
+  https://github.com/wodenwang/aily-skills-auth-authcli/releases/download/v0.2.0/auth-cli-darwin-arm64.tar.gz
 tar -xzf /tmp/authcli-release/auth-cli-darwin-arm64.tar.gz -C /tmp/authcli-release
 install /tmp/authcli-release/auth-cli-darwin-arm64 /usr/local/bin/auth-cli
 ```

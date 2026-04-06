@@ -9,13 +9,13 @@
 ## Commands
 
 - `auth-cli check`
+- `auth-cli check --help`
 
 ## Input Fields
 
 - `user_id`
 - `skill_id`
-- `agent_id`
-- `chat_id`
+- `context_file`
 
 输入优先级：
 
@@ -47,3 +47,4 @@
 - 任一错误场景必须 fail-closed，不输出伪造 token
 - `env` 模式仅在 allow 场景输出 token 字段
 - `json` 和 `env` 都必须保留 `request_id` 以便审计串联
+- `agent_id`、`chat_id` 不属于 `0.2.0` 核心输入，也不得出现在公开输出字段中

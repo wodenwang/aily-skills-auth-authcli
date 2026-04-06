@@ -37,7 +37,6 @@ func TestCheckUsesCacheAfterInitialAuth(t *testing.T) {
 	input := cli.Input{
 		SkillID: "sales-analysis",
 		UserID:  "ou_abc123",
-		AgentID: "agent_1",
 		Format:  "json",
 		Context: map[string]any{},
 	}
@@ -94,7 +93,6 @@ func TestCheckRefreshesCachedToken(t *testing.T) {
 	input := cli.Input{
 		SkillID: "sales-analysis",
 		UserID:  "ou_abc123",
-		AgentID: "agent_1",
 		Format:  "json",
 		Context: map[string]any{},
 	}
@@ -145,7 +143,6 @@ func TestCheckRefreshFailureDeletesCacheAndRechecks(t *testing.T) {
 	input := cli.Input{
 		SkillID: "sales-analysis",
 		UserID:  "ou_abc123",
-		AgentID: "agent_1",
 		Format:  "json",
 		Context: map[string]any{},
 	}
@@ -176,7 +173,7 @@ func TestRunReturnsUpstreamExitCodeAndStableStderr(t *testing.T) {
 	t.Setenv("AUTHCLI_CACHE_PATH", cachePath)
 
 	stderr := captureStderr(t, func() {
-		code := Run([]string{"check", "--skill", "sales-analysis", "--user-id", "ou_abc123", "--agent-id", "agent_1", "--format", "exit-code"})
+		code := Run([]string{"check", "--skill", "sales-analysis", "--user-id", "ou_abc123", "--format", "exit-code"})
 		if code != ExitUpstreamError {
 			t.Fatalf("Run() code = %d", code)
 		}
@@ -197,6 +194,43 @@ func TestRunReturnsInvalidInputExitCodeAndStableStderr(t *testing.T) {
 
 	if !strings.Contains(stderr, "AUTHCLI_INVALID_INPUT:") {
 		t.Fatalf("unexpected stderr: %s", stderr)
+	}
+}
+
+func TestRunHelpReturnsZeroAndFormalHelpText(t *testing.T) {
+	originalStdout := os.Stdout
+	reader, writer, err := os.Pipe()
+	if err != nil {
+		t.Fatalf("os.Pipe() error = %v", err)
+	}
+	os.Stdout = writer
+	defer func() {
+		os.Stdout = originalStdout
+	}()
+
+	code := Run([]string{"check", "--help"})
+
+	_ = writer.Close()
+	var buf bytes.Buffer
+	if _, err := io.Copy(&buf, reader); err != nil {
+		t.Fatalf("io.Copy() error = %v", err)
+	}
+
+	if code != ExitAllowed {
+		t.Fatalf("Run() code = %d", code)
+	}
+	output := buf.String()
+	for _, expected := range []string{
+		"auth-cli check --skill <skill_id> --user-id <user_id>",
+		"Input Priority:",
+		"Outputs:",
+		"Deny vs Error:",
+		"Cache Semantics:",
+		"Install And Upgrade:",
+	} {
+		if !strings.Contains(output, expected) {
+			t.Fatalf("missing %q in help output:\n%s", expected, output)
+		}
 	}
 }
 

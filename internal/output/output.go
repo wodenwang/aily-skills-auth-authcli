@@ -42,8 +42,6 @@ func writeEnv(w io.Writer, result auth.Result) error {
 			fmt.Sprintf("AUTH_REFRESH_BEFORE=%d", result.RefreshBefore),
 			fmt.Sprintf("AUTH_USER_ID=%s", authContext.UserID),
 			fmt.Sprintf("AUTH_SKILL_ID=%s", authContext.SkillID),
-			fmt.Sprintf("AUTH_AGENT_ID=%s", authContext.AgentID),
-			fmt.Sprintf("AUTH_CHAT_ID=%s", valueOrEmpty(authContext.ChatID)),
 		)
 	} else {
 		lines = append(lines,
@@ -53,11 +51,4 @@ func writeEnv(w io.Writer, result auth.Result) error {
 	}
 	_, err := io.WriteString(w, strings.Join(lines, "\n")+"\n")
 	return err
-}
-
-func valueOrEmpty(v *string) string {
-	if v == nil {
-		return ""
-	}
-	return *v
 }

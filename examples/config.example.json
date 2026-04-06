@@ -1,7 +1,5 @@
 {
   "user_id": "ou_abc123",
-  "agent_id": "host-vm-a1b2c3d4",
-  "chat_id": "oc_sales_weekly",
   "format": "json",
   "iam_base_url": "http://127.0.0.1:8000",
   "cache_path": "~/.aily-skills-auth/cache/tokens.json"

@@ -9,15 +9,13 @@ import (
 	"time"
 )
 
-const Version = 1
+const Version = 2
 
 type Entry struct {
 	CacheKey        string    `json:"cache_key"`
 	RequestID       string    `json:"request_id"`
 	UserID          string    `json:"user_id"`
 	SkillID         string    `json:"skill_id"`
-	AgentID         string    `json:"agent_id"`
-	ChatID          *string   `json:"chat_id"`
 	AccessToken     string    `json:"access_token"`
 	TokenType       string    `json:"token_type"`
 	ExpiresAt       time.Time `json:"expires_at"`
@@ -43,8 +41,6 @@ const (
 type Key struct {
 	UserID  string
 	SkillID string
-	AgentID string
-	ChatID  *string
 }
 
 func DefaultFile() File {
@@ -88,7 +84,7 @@ func Save(path string, f File) error {
 }
 
 func CacheKey(key Key) string {
-	return fmt.Sprintf("%s|%s|%s|%s", key.UserID, key.SkillID, key.AgentID, chatPart(key.ChatID))
+	return fmt.Sprintf("%s|%s", key.UserID, key.SkillID)
 }
 
 func Find(f File, key Key) (Entry, int, bool) {
@@ -138,8 +134,6 @@ func NewEntry(key Key, requestID, accessToken, tokenType string, expiresIn, refr
 		RequestID:       requestID,
 		UserID:          key.UserID,
 		SkillID:         key.SkillID,
-		AgentID:         key.AgentID,
-		ChatID:          key.ChatID,
 		AccessToken:     accessToken,
 		TokenType:       tokenType,
 		ExpiresAt:       now.Add(time.Duration(expiresIn) * time.Second).UTC(),
@@ -147,11 +141,4 @@ func NewEntry(key Key, requestID, accessToken, tokenType string, expiresIn, refr
 		CachedAt:        now.UTC(),
 		Source:          source,
 	}
-}
-
-func chatPart(chatID *string) string {
-	if chatID == nil || *chatID == "" {
-		return "null"
-	}
-	return *chatID
 }

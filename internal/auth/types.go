@@ -1,17 +1,13 @@
 package auth
 
 type AuthContext struct {
-	UserID  string  `json:"user_id"`
-	SkillID string  `json:"skill_id"`
-	AgentID string  `json:"agent_id"`
-	ChatID  *string `json:"chat_id"`
+	UserID  string `json:"user_id"`
+	SkillID string `json:"skill_id"`
 }
 
 type CheckRequest struct {
 	UserID  string         `json:"user_id"`
 	SkillID string         `json:"skill_id"`
-	AgentID string         `json:"agent_id"`
-	ChatID  *string        `json:"chat_id"`
 	Context map[string]any `json:"context,omitempty"`
 }
 

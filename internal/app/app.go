@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"aily-skills-auth-authcli/internal/auth"
@@ -34,6 +35,10 @@ var (
 )
 
 func Run(args []string) int {
+	if len(args) >= 2 && args[0] == "check" && (args[1] == "--help" || args[1] == "-h") {
+		_, _ = fmt.Fprint(os.Stdout, helpText())
+		return ExitAllowed
+	}
 	if err := run(args); err != nil {
 		switch {
 		case errors.Is(err, errDenied):
@@ -58,6 +63,10 @@ func Run(args []string) int {
 func run(args []string) error {
 	command, err := cli.Parse(args)
 	if err != nil {
+		if errors.Is(err, cli.ErrHelp) {
+			_, _ = fmt.Fprint(os.Stdout, helpText())
+			return nil
+		}
 		return fmt.Errorf("%w: %v", errInvalidInput, err)
 	}
 
@@ -99,8 +108,6 @@ func check(ctx context.Context, client auth.Client, cachePath string, input cli.
 	key := cache.Key{
 		UserID:  input.UserID,
 		SkillID: input.SkillID,
-		AgentID: input.AgentID,
-		ChatID:  input.ChatID,
 	}
 
 	cacheFile, err := cache.Load(cachePath)
@@ -152,8 +159,6 @@ func check(ctx context.Context, client auth.Client, cachePath string, input cli.
 	resp, err := client.Check(ctx, auth.CheckRequest{
 		UserID:  input.UserID,
 		SkillID: input.SkillID,
-		AgentID: input.AgentID,
-		ChatID:  input.ChatID,
 		Context: input.Context,
 	})
 	if err != nil {
@@ -191,8 +196,6 @@ func check(ctx context.Context, client auth.Client, cachePath string, input cli.
 		AuthContext: &auth.AuthContext{
 			UserID:  input.UserID,
 			SkillID: input.SkillID,
-			AgentID: input.AgentID,
-			ChatID:  input.ChatID,
 		},
 	}, nil
 }
@@ -218,8 +221,6 @@ func allowedResultFromEntry(entry cache.Entry, key cache.Key, cacheHit bool) aut
 		AuthContext: &auth.AuthContext{
 			UserID:  key.UserID,
 			SkillID: key.SkillID,
-			AgentID: key.AgentID,
-			ChatID:  key.ChatID,
 		},
 	}
 }
@@ -275,4 +276,68 @@ func renderUpstreamDetails(err error) string {
 		}
 	}
 	return errorDetails(err, errUpstream)
+}
+
+func helpText() string {
+	lines := []string{
+		"Usage:",
+		"  auth-cli check --skill <skill_id> --user-id <user_id> [--format <json|env|exit-code>] [--context-file <path>]",
+		"",
+		"Purpose:",
+		"  Run local Skill authorization against IAM using the frozen 0.2.0 minimum input model: user_id + skill_id.",
+		"",
+		"Input Priority:",
+		"  1. explicit flags",
+		"  2. environment variables",
+		"  3. runtime context file",
+		"  4. local config file",
+		"",
+		"Required Inputs:",
+		"  --skill",
+		"  --user-id",
+		"",
+		"Optional Inputs:",
+		"  --format",
+		"  --context-file",
+		"",
+		"Environment:",
+		"  AUTHCLI_USER_ID",
+		"  AUTHCLI_FORMAT",
+		"  AUTHCLI_IAM_BASE_URL",
+		"  AUTHCLI_TIMEOUT",
+		"  AUTHCLI_CACHE_PATH",
+		"  AUTHCLI_CONFIG_FILE",
+		"",
+		"Outputs:",
+		"  json      default; prints the frozen JSON contract",
+		"  env       prints AUTH_* lines; token fields only on allow",
+		"  exit-code prints no body; rely on process exit status",
+		"",
+		"Exit Codes:",
+		"  0  allowed",
+		"  10 denied by policy",
+		"  20 invalid input",
+		"  30 cache read/write failure",
+		"  40 upstream unavailable or timeout",
+		"  50 unexpected internal error",
+		"",
+		"Deny vs Error:",
+		"  deny is a valid authorization decision and returns exit code 10.",
+		"  upstream failures, cache failures, and invalid input are errors and always fail closed.",
+		"",
+		"Cache Semantics:",
+		"  cache key is user_id + skill_id.",
+		"  before refresh_before_at: reuse cached token.",
+		"  from refresh_before_at until expires_at: call /api/v1/token/refresh first.",
+		"  at or after expires_at, or after refresh reset codes: delete cache entry and call /api/v1/auth/check.",
+		"",
+		"Install And Upgrade:",
+		"  use the release install script for tagged versions.",
+		"  curl -fsSL https://github.com/wodenwang/aily-skills-auth-authcli/releases/download/v0.2.0/install-authcli.sh | sh -s -- --version v0.2.0 --install-dir /usr/local/bin",
+		"",
+		"Examples:",
+		"  auth-cli check --skill sales-analysis --user-id ou_abc123 --format json",
+		"  auth-cli check --skill <skill_id> --user-id <user_id> --format json",
+	}
+	return strings.Join(lines, "\n") + "\n"
 }

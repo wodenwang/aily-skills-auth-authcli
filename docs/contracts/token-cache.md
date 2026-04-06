@@ -17,10 +17,8 @@
 
 - `user_id`
 - `skill_id`
-- `agent_id`
-- `chat_id`
 
-私聊场景下 `chat_id` 固定写为 `null`。
+`0.2.0` 不再把 `agent_id`、`chat_id` 作为缓存键组成部分。
 
 ## Invalidation Rules
 
@@ -28,7 +26,7 @@
 - 当前时间大于等于 `refresh_before_at` 且早于 `expires_at` 时，必须先调用 `/api/v1/token/refresh`
 - 当前时间大于等于 `expires_at` 时，禁止刷新旧 token，必须重新调用 `/api/v1/auth/check`
 - 上游返回 `TOKEN_REVOKED`、`TOKEN_INVALID`、`TOKEN_EXPIRED` 时，必须立即删除对应缓存项
-- 请求上下文四元组任一字段变化时，禁止复用旧缓存项
+- `user_id` 或 `skill_id` 任一变化时，禁止复用旧缓存项
 
 ## Write Rules
 

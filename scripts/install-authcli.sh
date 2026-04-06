@@ -4,7 +4,7 @@ set -eu
 
 REPO_OWNER="wodenwang"
 REPO_NAME="aily-skills-auth-authcli"
-DEFAULT_VERSION="v0.1.0-alpha"
+DEFAULT_VERSION="v0.2.0"
 DEFAULT_INSTALL_DIR="${HOME}/.local/bin"
 DEFAULT_BIN_NAME="auth-cli"
 
@@ -15,7 +15,7 @@ Usage:
 
 Examples:
   sh install-authcli.sh
-  sh install-authcli.sh --version v0.1.0-alpha
+  sh install-authcli.sh --version v0.2.0
   sh install-authcli.sh --install-dir /usr/local/bin
 EOF
 }
@@ -185,5 +185,5 @@ Next steps:
 1. Ensure ${INSTALL_DIR} is in PATH.
 2. Set AUTHCLI_IAM_BASE_URL to your iam-service base URL.
 3. Optional: set AUTHCLI_CACHE_PATH and AUTHCLI_CONFIG_FILE.
-4. Run: ${INSTALL_PATH} check --skill <skill_id> --format json
+4. Run: ${INSTALL_PATH} check --skill <skill_id> --user-id <user_id> --format json
 EOF

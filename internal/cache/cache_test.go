@@ -23,14 +23,13 @@ func TestEvaluate(t *testing.T) {
 	}
 }
 
-func TestCacheKeyUsesNullForPrivateChat(t *testing.T) {
+func TestCacheKeyUsesUserAndSkillOnly(t *testing.T) {
 	key := Key{
 		UserID:  "ou_abc123",
 		SkillID: "sales-analysis",
-		AgentID: "host-vm-a1b2c3d4",
 	}
 
-	if got := CacheKey(key); got != "ou_abc123|sales-analysis|host-vm-a1b2c3d4|null" {
+	if got := CacheKey(key); got != "ou_abc123|sales-analysis" {
 		t.Fatalf("CacheKey() = %s", got)
 	}
 }

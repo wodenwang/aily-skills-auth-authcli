@@ -24,10 +24,10 @@
 | T6 | 上游超时或不可用 | 退出码为 `40`，fail-closed |
 | T7 | `json` 输出 allow | 字段名与冻结契约一致 |
 | T8 | `env` 输出 deny | 只输出 deny 字段，不输出 token |
-| T9 | 私聊 token 被带到群聊 | 不复用私聊缓存 |
+| T9 | 同一用户切换 Skill | 不复用旧缓存 |
 
 ## Tooling
 
 - Framework: Go `testing` + `httptest`
 - Fixtures: 临时目录缓存文件、模拟 IAM 服务
-- CI: 后续接入 `go test ./...`
+- CI: `go test ./...` + `./scripts/beta-smoke.sh`

@@ -10,8 +10,6 @@ import (
 
 type File struct {
 	UserID     string `json:"user_id"`
-	AgentID    string `json:"agent_id"`
-	ChatID     string `json:"chat_id"`
 	Format     string `json:"format"`
 	IAMBaseURL string `json:"iam_base_url"`
 	CachePath  string `json:"cache_path"`
@@ -20,8 +18,6 @@ type File struct {
 type Settings struct {
 	FilePath   string
 	UserID     string
-	AgentID    string
-	ChatID     string
 	Format     string
 	IAMBaseURL string
 	CachePath  string
@@ -40,8 +36,6 @@ func LoadFromEnv() Settings {
 	return Settings{
 		FilePath:   configPath,
 		UserID:     os.Getenv("AUTHCLI_USER_ID"),
-		AgentID:    os.Getenv("AUTHCLI_AGENT_ID"),
-		ChatID:     os.Getenv("AUTHCLI_CHAT_ID"),
 		Format:     os.Getenv("AUTHCLI_FORMAT"),
 		IAMBaseURL: os.Getenv("AUTHCLI_IAM_BASE_URL"),
 		CachePath:  os.Getenv("AUTHCLI_CACHE_PATH"),

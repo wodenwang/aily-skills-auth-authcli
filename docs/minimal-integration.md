@@ -35,44 +35,29 @@ rm -f ~/.aily-skills-auth/cache/tokens.json
 
 ## Fixed Commands
 
-私聊 allow：
+allow：
 
 ```bash
 go run ./cmd/auth-cli check \
   --skill sales-analysis \
   --user-id ou_abc123 \
-  --agent-id host-vm-a1b2c3d4 \
   --format json \
   --context-file ./examples/context-private.json
 ```
 
-群聊 allow：
+deny：
 
 ```bash
 go run ./cmd/auth-cli check \
   --skill sales-analysis \
-  --user-id ou_abc123 \
-  --agent-id host-vm-a1b2c3d4 \
-  --chat-id oc_sales_weekly \
+  --user-id ou_left999 \
   --format json \
-  --context-file ./examples/context-group.json
-```
-
-群聊 deny：
-
-```bash
-go run ./cmd/auth-cli check \
-  --skill sales-analysis \
-  --user-id ou_abc123 \
-  --agent-id host-vm-a1b2c3d4 \
-  --chat-id oc_random_group \
-  --format json \
-  --context-file ./examples/context-group.json
+  --context-file ./examples/context-private.json
 ```
 
 刷新验证：
 
-1. 先执行一次群聊 allow，生成缓存。
+1. 先执行一次 allow，生成缓存。
 2. 等待 token 进入 `refresh_before` 窗口后重复执行同一命令。
 3. 期望返回新的 token，且缓存文件中 `source` 更新为 `token_refresh`。
 
@@ -80,7 +65,7 @@ go run ./cmd/auth-cli check \
 
 `demo-skill` 集成时只允许依赖：
 
-- `auth-cli check --format json`
+- `auth-cli check --skill <skill_id> --user-id <user_id> --format json`
 - `AUTH_*` 环境变量输出
 - 退出码 `0/10/20/30/40/50`
 
@@ -110,4 +95,10 @@ go test ./... -run TestRealIAM
 
 ```bash
 ./scripts/real-iam-smoke.sh
+```
+
+本地 beta 基线校验：
+
+```bash
+./scripts/beta-smoke.sh
 ```

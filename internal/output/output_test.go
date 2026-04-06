@@ -14,7 +14,7 @@ func TestWriteEnvDenied(t *testing.T) {
 		OK:          false,
 		RequestID:   "req_123",
 		Allowed:     false,
-		DenyCode:    "CHAT_SKILL_DENIED",
+		DenyCode:    "GRANT_NOT_ACTIVE",
 		DenyMessage: "denied",
 	}
 
@@ -22,7 +22,7 @@ func TestWriteEnvDenied(t *testing.T) {
 		t.Fatalf("Write() error = %v", err)
 	}
 	output := buf.String()
-	if !strings.Contains(output, "AUTH_DENY_CODE=CHAT_SKILL_DENIED") {
+	if !strings.Contains(output, "AUTH_DENY_CODE=GRANT_NOT_ACTIVE") {
 		t.Fatalf("missing deny code: %s", output)
 	}
 	if strings.Contains(output, "AUTH_ACCESS_TOKEN=") {
@@ -38,6 +38,10 @@ func TestWriteJSONSuccessIncludesRequestID(t *testing.T) {
 		Allowed:     true,
 		TokenType:   "Bearer",
 		AccessToken: "tok_123",
+		AuthContext: &auth.AuthContext{
+			UserID:  "ou_abc123",
+			SkillID: "sales-analysis",
+		},
 	}
 
 	if err := Write(&buf, "json", result); err != nil {
@@ -46,5 +50,30 @@ func TestWriteJSONSuccessIncludesRequestID(t *testing.T) {
 	output := buf.String()
 	if !strings.Contains(output, `"request_id": "req_123"`) {
 		t.Fatalf("missing request id: %s", output)
+	}
+}
+
+func TestWriteEnvAllowDoesNotExposeLegacyIdentityFields(t *testing.T) {
+	var buf bytes.Buffer
+	result := auth.Result{
+		OK:            true,
+		RequestID:     "req_123",
+		Allowed:       true,
+		TokenType:     "Bearer",
+		AccessToken:   "tok_123",
+		ExpiresIn:     300,
+		RefreshBefore: 240,
+		AuthContext: &auth.AuthContext{
+			UserID:  "ou_abc123",
+			SkillID: "sales-analysis",
+		},
+	}
+
+	if err := Write(&buf, "env", result); err != nil {
+		t.Fatalf("Write() error = %v", err)
+	}
+	output := buf.String()
+	if strings.Contains(output, "AUTH_AGENT_ID=") || strings.Contains(output, "AUTH_CHAT_ID=") {
+		t.Fatalf("unexpected legacy identity fields: %s", output)
 	}
 }

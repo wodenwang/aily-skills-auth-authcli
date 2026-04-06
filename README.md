@@ -1,6 +1,6 @@
 # aily-skills-auth-authcli
 
-`aily-skills-auth-authcli` 是企业 Agent Skill 鉴权平台的本地鉴权 CLI 仓，负责身份采集、鉴权请求、token 缓存与刷新，以及向 Skill 输出冻结协议。
+`aily-skills-auth-authcli` 是企业 Agent Skill 鉴权平台的本地鉴权 CLI 仓，固定实现 `0.2.0` 的最小输入模型、缓存协议和 Skill 输出协议。
 
 ## Purpose
 
@@ -9,24 +9,33 @@
 ## Scope
 
 - In scope:
-  - `auth-cli check`
-  - 四元组身份采集
+  - `auth-cli check --skill <skill_id> --user-id <user_id>`
+  - 最小输入模型：`user_id + skill_id`
+  - 输入优先级：显式参数 > 环境变量 > 运行时上下文 > 本地配置
   - 本地 token 缓存与刷新
   - `/api/v1/auth/check`、`/api/v1/token/refresh` 客户端
   - `json` / `env` / `exit-code` 输出
+  - `--help` 正式验收文案
 - Out of scope:
   - 本地策略计算
   - JWT 服务端验证
   - 长期凭据托管
   - 管理控制台页面
+  - `agent_id`、`chat_id` 作为核心授权输入
 
 ## Interfaces
 
 - Inputs:
-  - 显式参数
-  - 环境变量
-  - Agent 运行时上下文
-  - 本地配置
+  - `--skill`
+  - `--user-id`
+  - `--format`
+  - `--context-file`
+  - `AUTHCLI_USER_ID`
+  - `AUTHCLI_FORMAT`
+  - `AUTHCLI_IAM_BASE_URL`
+  - `AUTHCLI_TIMEOUT`
+  - `AUTHCLI_CACHE_PATH`
+  - `AUTHCLI_CONFIG_FILE`
 - Outputs:
   - `json`
   - `env`
@@ -50,41 +59,71 @@
 
 `check` 命令固定执行以下流程：
 
-1. 解析 `--skill`、`--user-id`、`--agent-id`、`--chat-id`、`--format`、`--context-file`
+1. 解析 `--skill`、`--user-id`、`--format`、`--context-file`
 2. 按显式参数、环境变量、运行时上下文、本地配置的顺序组装输入
 3. 命中未进入刷新窗口的缓存时直接返回
 4. 命中刷新窗口但未过期的 token 时先调用 `/api/v1/token/refresh`
-5. 缓存不可用、token 已过期或刷新失败时重新调用 `/api/v1/auth/check`
+5. token 已过期或 refresh 返回重置错误码时删除缓存并重新调用 `/api/v1/auth/check`
 6. deny、上游异常、上下文缺失都 fail-closed
 
 ## Local Development
 
 1. 构建：`go build ./...`
 2. 测试：`go test ./...`
-3. 本地运行：
+3. 查看帮助：`go run ./cmd/auth-cli check --help`
+4. 本地运行：
 
 ```bash
 go run ./cmd/auth-cli check \
   --skill sales-analysis \
   --user-id ou_abc123 \
-  --agent-id host-vm-a1b2c3d4 \
   --format json \
   --context-file ./examples/context-private.json
 ```
 
-固定联调命令见 [docs/minimal-integration.md](/Users/wenzhewang/workspace/codex/aily-skills-auth-authcli/docs/minimal-integration.md)。
+固定联调命令见 [minimal-integration.md](/Users/wenzhewang/workspace/codex/aily-skills-auth-authcli/docs/minimal-integration.md)。
 
-## Alpha Release
+## Beta Quick Start
 
-`0.1.0-alpha` 的构建产物、分发方式和宿主机部署要求见 [docs/release-and-distribution.md](/Users/wenzhewang/workspace/codex/aily-skills-auth-authcli/docs/release-and-distribution.md)。
+1. 查看帮助：
 
-官方宿主机安装说明见 [docs/host-installation.md](/Users/wenzhewang/workspace/codex/aily-skills-auth-authcli/docs/host-installation.md)。
+```bash
+go run ./cmd/auth-cli check --help
+```
+
+2. 执行 beta smoke：
+
+```bash
+./scripts/beta-smoke.sh
+```
+
+3. 执行最小本地调用：
+
+```bash
+go run ./cmd/auth-cli check \
+  --skill sales-analysis \
+  --user-id ou_abc123 \
+  --format json \
+  --context-file ./examples/context-private.json
+```
+
+4. 如需真实 IAM 联调：
+
+```bash
+AUTHCLI_REAL_IAM_BASE_URL=http://127.0.0.1:8000 ./scripts/real-iam-smoke.sh
+```
+
+## Distribution
+
+`0.2.0` 的构建产物、分发方式和宿主机部署要求见 [release-and-distribution.md](/Users/wenzhewang/workspace/codex/aily-skills-auth-authcli/docs/release-and-distribution.md)。
+
+官方宿主机安装说明见 [host-installation.md](/Users/wenzhewang/workspace/codex/aily-skills-auth-authcli/docs/host-installation.md)。
 
 推荐安装命令：
 
 ```bash
-curl -fsSL https://github.com/wodenwang/aily-skills-auth-authcli/releases/download/v0.1.0-alpha/install-authcli.sh \
-  | sh -s -- --version v0.1.0-alpha --install-dir /usr/local/bin
+curl -fsSL https://github.com/wodenwang/aily-skills-auth-authcli/releases/download/v0.2.0/install-authcli.sh \
+  | sh -s -- --version v0.2.0 --install-dir /usr/local/bin
 ```
 
 安装后最小离线校验：
@@ -98,16 +137,14 @@ auth-cli check
 - 退出码 `20`
 - stderr 包含 `AUTHCLI_INVALID_INPUT: missing required flag: --skill`
 
-默认环境变量：
+升级入口：
 
-- `AUTHCLI_IAM_BASE_URL`: IAM 服务地址，默认 `http://127.0.0.1:8000`
-- `AUTHCLI_TIMEOUT`: 请求超时，默认 `5s`
-- `AUTHCLI_CACHE_PATH`: token 缓存路径，默认 `~/.aily-skills-auth/cache/tokens.json`
-- `AUTHCLI_CONFIG_FILE`: 本地配置文件路径，默认 `~/.aily-skills-auth/config.json`
-- `AUTHCLI_USER_ID`
-- `AUTHCLI_AGENT_ID`
-- `AUTHCLI_CHAT_ID`
-- `AUTHCLI_FORMAT`
+```bash
+curl -fsSL https://github.com/wodenwang/aily-skills-auth-authcli/releases/download/v0.2.0/install-authcli.sh \
+  | sh -s -- --version v0.2.0 --install-dir /usr/local/bin
+```
+
+beta 发布前检查见 [beta-release-checklist.md](/Users/wenzhewang/workspace/codex/aily-skills-auth-authcli/docs/beta-release-checklist.md)。
 
 稳定 stderr 前缀：
 
@@ -120,8 +157,6 @@ auth-cli check
 
 本仓字段命名和行为以上游冻结契约为唯一准绳：
 
-- [auth-check.md](/Users/wenzhewang/workspace/codex/aily-skills-auth/docs/contracts/auth-check.md)
-- [token-refresh.md](/Users/wenzhewang/workspace/codex/aily-skills-auth/docs/contracts/token-refresh.md)
 - [authcli-output.md](/Users/wenzhewang/workspace/codex/aily-skills-auth/docs/contracts/authcli-output.md)
 - [token-cache.md](/Users/wenzhewang/workspace/codex/aily-skills-auth/docs/contracts/token-cache.md)
-- [domain-model.md](/Users/wenzhewang/workspace/codex/aily-skills-auth/docs/contracts/domain-model.md)
+- [authcli.md](/Users/wenzhewang/workspace/codex/aily-skills-auth/docs/modules/authcli.md)

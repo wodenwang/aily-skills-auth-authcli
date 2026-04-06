@@ -4,18 +4,19 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"strings"
 
 	"aily-skills-auth-authcli/internal/config"
 	contextfile "aily-skills-auth-authcli/internal/context"
 )
 
+var ErrHelp = errors.New("help requested")
+
 type Command struct {
 	Name        string
 	SkillID     string
 	UserID      string
-	AgentID     string
-	ChatID      string
 	Format      string
 	ContextFile string
 }
@@ -23,8 +24,6 @@ type Command struct {
 type Input struct {
 	SkillID string
 	UserID  string
-	AgentID string
-	ChatID  *string
 	Format  string
 	Context map[string]any
 }
@@ -39,13 +38,15 @@ func Parse(args []string) (Command, error) {
 	}
 
 	fs := flag.NewFlagSet("check", flag.ContinueOnError)
+	fs.SetOutput(io.Discard)
 	fs.StringVar(&cmd.SkillID, "skill", "", "skill id")
 	fs.StringVar(&cmd.UserID, "user-id", "", "user id")
-	fs.StringVar(&cmd.AgentID, "agent-id", "", "agent id")
-	fs.StringVar(&cmd.ChatID, "chat-id", "", "chat id")
 	fs.StringVar(&cmd.Format, "format", "", "output format")
 	fs.StringVar(&cmd.ContextFile, "context-file", "", "runtime context file")
 	if err := fs.Parse(args[1:]); err != nil {
+		if errors.Is(err, flag.ErrHelp) {
+			return cmd, ErrHelp
+		}
 		return Command{}, err
 	}
 	if strings.TrimSpace(cmd.SkillID) == "" {
@@ -58,14 +59,8 @@ func ResolveInput(cmd Command, env config.Settings, ctx contextfile.File, file c
 	input := Input{
 		SkillID: cmd.SkillID,
 		UserID:  firstNonEmpty(cmd.UserID, env.UserID, ctx.UserID, file.UserID),
-		AgentID: firstNonEmpty(cmd.AgentID, env.AgentID, ctx.AgentID, file.AgentID),
 		Format:  strings.ToLower(firstNonEmpty(cmd.Format, env.Format, file.Format, "json")),
 		Context: ctx.Context,
-	}
-
-	chatValue := firstNonEmpty(cmd.ChatID, env.ChatID, ctx.ChatID, file.ChatID)
-	if chatValue != "" {
-		input.ChatID = &chatValue
 	}
 
 	switch input.Format {
@@ -74,8 +69,8 @@ func ResolveInput(cmd Command, env config.Settings, ctx contextfile.File, file c
 		return Input{}, fmt.Errorf("unsupported format: %s", input.Format)
 	}
 
-	if input.UserID == "" || input.AgentID == "" {
-		return Input{}, errors.New("user_id and agent_id are required")
+	if input.UserID == "" {
+		return Input{}, errors.New("user_id is required")
 	}
 	return input, nil
 }

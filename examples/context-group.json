@@ -1,9 +1,6 @@
 {
-  "user_id": "ou_abc123",
-  "agent_id": "host-vm-a1b2c3d4",
-  "chat_id": "oc_sales_weekly",
   "context": {
     "requested_action": "read",
-    "period": "2026-03"
+    "period": "2026-04"
   }
 }
